@@ -37,16 +37,16 @@ int main()
   poses.push_back(SE2(0.1,0.1,0));
 
   //create some odometry
-  Eigen::Matrix3d covariance;
-  covariance.fill(0.);
-  covariance(0, 0) = 0.001;
-  covariance(1, 1) = 0.001;
-  covariance(2, 2) = 0.001;
-  Eigen::Matrix3d information = covariance.inverse();
+  Eigen::Matrix3d odometry_covariance;
+  odometry_covariance.fill(0.);
+  odometry_covariance(0, 0) = 0.00100;
+  odometry_covariance(1, 1) = 0.00100;
+  odometry_covariance(2, 2) = 0.00100;
+  Eigen::Matrix3d information = odometry_covariance.inverse();
   Eigen::Matrix2d information2d;
   information2d.fill(0.);
-  information2d(0,0)=1000;
-  information2d(1,1)=1000;
+  information2d(0,0)=100;
+  information2d(1,1)=100;
 
 
   std::vector<Simulator::GridEdge> odometries;
@@ -121,11 +121,12 @@ int main()
   cerr << "done." << endl;
 
   // add the landmark observations
-  cerr << "Optimization: add landmark vertices ... ";
+  cerr << "Optimization: add landmark vertices ... \n";
   for (size_t i = 0; i < landmarks.size(); ++i) {
     const Eigen::Vector2d& l = landmarks[i];
     VertexPointXY* landmark = new VertexPointXY;
     landmark->setId(i+poses.size());
+    std::cout << "Landmark id: " << i+poses.size() << " added\n";
     landmark->setEstimate(l);
     optimizer.addVertex(landmark);
   }
@@ -170,7 +171,7 @@ int main()
 
   cerr << "Optimizing" << endl;
   optimizer.initializeOptimization();
-  optimizer.optimize(50);
+  optimizer.optimize(10);
   cerr << "done." << endl;
 
   optimizer.save("experiment_after.g2o");
