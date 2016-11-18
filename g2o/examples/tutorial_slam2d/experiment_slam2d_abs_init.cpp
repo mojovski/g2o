@@ -32,9 +32,11 @@ int main()
 {
   //create some poses SE2(x,y,theta)
   std::vector<SE2> poses;
-  poses.push_back(SE2(0,0,0));
-  poses.push_back(SE2(0.1,0,0));
-  poses.push_back(SE2(0.1,0.1,0));
+  poses.push_back(SE2(0, 0, 0));
+  poses.push_back(SE2(1, 0, 0));
+  poses.push_back(SE2(1, 1, 0));
+
+  SE2 gt_trafo(1, 0, 1.57079632679/*pi/2*/); //the new frame inside the old frame.
 
   //create some odometry
   Eigen::Matrix3d odometry_covariance;
@@ -83,7 +85,9 @@ int main()
   SlamLinearSolver* linearSolver = new SlamLinearSolver();
   linearSolver->setBlockOrdering(false);
   SlamBlockSolver* blockSolver = new SlamBlockSolver(linearSolver);
+  blockSolver->setSchur(true);
   OptimizationAlgorithmGaussNewton* solver = new OptimizationAlgorithmGaussNewton(blockSolver);
+
 
   optimizer.setAlgorithm(solver);
 
@@ -153,6 +157,25 @@ int main()
 
   cerr << "done." << endl;
 
+  cout << "Checking edge errors before optimization:\n";
+
+  optimizer.computeActiveErrors();
+  SparseOptimizer::EdgeSet::iterator it;
+  int ei=0;
+  for (it=optimizer.edges().begin(); it!=optimizer.edges().end(); ++it)
+  {
+    SparseOptimizer::Edge* e = dynamic_cast<SparseOptimizer::Edge*>(*it);
+    double * errors=e->errorData();
+    if (ei<2) //se2
+    {
+      cout << "Edge " << ei << " error: (" << errors[0] << ", " << errors[1] << ", " << errors[2] << ")" <<endl;
+    } else
+    {//pointxy
+      cout << "Edge " << ei << " error: (" << errors[0] << ", " << errors[1] << ")" <<endl;
+    }
+    ei++;
+  }
+
 
   /*********************************************************************************
    * optimization
@@ -173,6 +196,25 @@ int main()
   optimizer.initializeOptimization();
   optimizer.optimize(10);
   cerr << "done." << endl;
+
+  cout << "Checking edge errors after optimization:\n";
+
+  optimizer.computeActiveErrors();
+  ei=0;
+  for (it=optimizer.edges().begin(); it!=optimizer.edges().end(); ++it)
+  {
+    SparseOptimizer::Edge* e = dynamic_cast<SparseOptimizer::Edge*>(*it);
+    double * errors=e->errorData();
+    if (ei<2) //se2
+    {
+      cout << "Edge " << ei << " error: (" << errors[0] << ", " << errors[1] << ", " << errors[2] << ")" <<endl;
+    } else
+    {//pointxy
+      cout << "Edge " << ei << " error: (" << errors[0] << ", " << errors[1] << ")" <<endl;
+    }
+    ei++;
+  }
+
 
   optimizer.save("experiment_after.g2o");
 
