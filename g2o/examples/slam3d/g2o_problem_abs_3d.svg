@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="g2o_problem_abs_3d.svg"
-   inkscape:export-filename="/home/eugen/tmp/g2o_problem_abs_3d.png"
+   inkscape:export-filename="/home/eugen/projects/cpp/g2o/g2o/examples/slam3d/g2o_problem_abs_3d.png"
    inkscape:export-xdpi="100"
    inkscape:export-ydpi="100">
   <defs
@@ -123,9 +123,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="394.74921"
-     inkscape:cy="79.125135"
+     inkscape:zoom="1.979899"
+     inkscape:cx="263.05901"
+     inkscape:cy="138.77264"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"

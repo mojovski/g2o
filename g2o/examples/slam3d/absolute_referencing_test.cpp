@@ -23,7 +23,6 @@ This test check whether the absolute referencing feature works with very simple 
 #include <g2o/core/eigen_types.h>
 #include <g2o/types/slam3d/isometry3d_mappings.h>
 
-
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -210,9 +209,10 @@ int main()
   // prepare and run the optimization
   // fix the first robot pose to account for gauge freedom
   //VertexSE2* firstRobotPose = dynamic_cast<VertexSE2*>(optimizer.vertex(0));
-  cout << "Setting vertices with IDs " << poses.size() << " and " << poses.size()+1 << " to fixed!" << endl;
+  cout << "Setting vertices with IDs " << poses.size() << ", " << poses.size()+1 << " and " << poses.size()+2 << " to fixed!" << endl;
   dynamic_cast<VertexPointXYZ*>(optimizer.vertex(poses.size()))->setFixed(true);
   dynamic_cast<VertexPointXYZ*>(optimizer.vertex(poses.size()+1))->setFixed(true);
+  dynamic_cast<VertexPointXYZ*>(optimizer.vertex(poses.size()+2))->setFixed(true);
   //firstRobotPose->setFixed(true);
   optimizer.setVerbose(true);
 
@@ -266,9 +266,10 @@ int main()
 
   optimizer.save("experiment_absPos3D_after.g2o");
 
-  //Isometry3D estimate=dynamic_cast<VertexSE3*>(optimizer.vertex(0))->estimate();
-  //std::cout << "v0: " << est << std::endl;
-  //std::cout << "v"<< poses.size()-1 << ": " << dynamic_cast<VertexSE3*>(optimizer.vertex(poses.size()-1))->estimate() << std::endl;
+  for (int i=0; i<poses.size(); i++)
+  {
+  	cout << " VertexSE3.pose " << i << ": \n" <<  internal::toSE3Quat(dynamic_cast<VertexSE3*>(optimizer.vertex(i))->estimate()) << endl;
+  }
 
   // freeing the graph memory
   optimizer.clear();
