@@ -159,7 +159,8 @@ int main()
 
   cout << "Checking edge errors before optimization:\n";
 
-  optimizer.computeActiveErrors();
+  //optimizer.computeActiveErrors();
+  optimizer.initializeOptimization();
   SparseOptimizer::EdgeSet::iterator it;
   int ei=0;
   for (it=optimizer.edges().begin(); it!=optimizer.edges().end(); ++it)
