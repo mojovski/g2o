@@ -24,13 +24,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "edge_se3_pointxyz_depth.h"
+#include "edge_se3expmap_pointxyz_depth.h"
+#include "g2o/types/sba/types_six_dof_expmap.h"
 
 namespace g2o {
   using namespace g2o;
 
   // point to camera projection, monocular
-  EdgeSE3PointXYZDepth::EdgeSE3PointXYZDepth() : BaseBinaryEdge<3, Vector3D/*Measurement of the point IN the image (u,v,depth)*/, VertexSE3, VertexPointXYZ>() {
+  EdgeSE3ExpmapPointXYZDepth::EdgeSE3ExpmapPointXYZDepth() : BaseBinaryEdge<3, Vector3D/*Measurement of the point IN the image (u,v,depth)*/, VertexSE3Expmap, VertexPointXYZ>() {
     resizeParameters(1);
     installParameter(params, 0);
     information().setIdentity();
@@ -39,7 +40,7 @@ namespace g2o {
     J.block<3,3>(0,0) = -Matrix3D::Identity();
   }
 
-  bool EdgeSE3PointXYZDepth::resolveCaches(){
+  bool EdgeSE3ExpmapPointXYZDepth::resolveCaches(){
     ParameterVector pv(1);
     pv[0]=params;
     resolveCache(cache, (OptimizableGraph::Vertex*)_vertices[0],"CACHE_CAMERA",pv);
@@ -49,7 +50,7 @@ namespace g2o {
 
 
 
-  bool EdgeSE3PointXYZDepth::read(std::istream& is) {
+  bool EdgeSE3ExpmapPointXYZDepth::read(std::istream& is) {
     int pid;
     is >> pid;
     setParameterId(0,pid);
@@ -77,7 +78,7 @@ namespace g2o {
     return true;
   }
 
-  bool EdgeSE3PointXYZDepth::write(std::ostream& os) const {
+  bool EdgeSE3ExpmapPointXYZDepth::write(std::ostream& os) const {
     os << params->id() << " ";
     for (int i=0; i<3; i++) os  << measurement()[i] << " ";
     for (int i=0; i<information().rows(); i++)
@@ -88,7 +89,7 @@ namespace g2o {
   }
 
 
-  void EdgeSE3PointXYZDepth::computeError() {
+  void EdgeSE3ExpmapPointXYZDepth::computeError() {
     // from cam to point (track)
     //VertexSE3 *cam = static_cast<VertexSE3*>(_vertices[0]);
     VertexPointXYZ *point = static_cast<VertexPointXYZ*>(_vertices[1]);
@@ -105,7 +106,7 @@ namespace g2o {
     //    std::cout << _error << std::endl << std::endl;
   }
 
-  void EdgeSE3PointXYZDepth::linearizeOplus() {
+  void EdgeSE3ExpmapPointXYZDepth::linearizeOplus() {
     //VertexSE3 *cam = static_cast<VertexSE3 *>(_vertices[0]);
     VertexPointXYZ *vp = static_cast<VertexPointXYZ *>(_vertices[1]);
 
@@ -139,7 +140,7 @@ namespace g2o {
   }
 
 
-  bool EdgeSE3PointXYZDepth::setMeasurementFromState(){
+  bool EdgeSE3ExpmapPointXYZDepth::setMeasurementFromState(){
     //VertexSE3 *cam = static_cast<VertexSE3*>(_vertices[0]);
     VertexPointXYZ *point = static_cast<VertexPointXYZ*>(_vertices[1]);
 
@@ -155,7 +156,7 @@ namespace g2o {
   }
 
 
-  void EdgeSE3PointXYZDepth::initialEstimate(const OptimizableGraph::VertexSet& from, OptimizableGraph::Vertex* /*to_*/)
+  void EdgeSE3ExpmapPointXYZDepth::initialEstimate(const OptimizableGraph::VertexSet& from, OptimizableGraph::Vertex* /*to_*/)
   {
     (void) from;
     assert(from.size() == 1 && from.count(_vertices[0]) == 1 && "Can not initialize VertexDepthCam position by VertexTrackXYZ");

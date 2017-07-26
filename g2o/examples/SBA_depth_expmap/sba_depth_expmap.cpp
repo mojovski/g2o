@@ -43,6 +43,8 @@
 #include "g2o/solvers/structure_only/structure_only_solver.h"
 #include <cmath>
 #include <g2o/types/slam3d/edge_se3_pointxyz_depth.h>
+#include <g2o/types/slam3d/edge_se3expmap_pointxyz_depth.h>
+
 #include <g2o/types/slam3d/se3quat.h>
 #include <g2o/types/slam3d/edge_se3.h>
 #include "g2o/solvers/csparse/linear_solver_csparse.h"
@@ -117,7 +119,7 @@ void print_edge_errors(g2o::SparseOptimizer& optimizer, int num_odometry_edges)
 
 		if (dynamic_cast<g2o::EdgeSE3*>(*eit))
 		{
-			g2o::EdgeSE3* e = dynamic_cast<g2o::EdgeSE3*>(*eit);
+			g2o::EdgeSE3Expmap* e = dynamic_cast<g2o::EdgeSE3Expmap*>(*eit);
 			e->computeError();
 			double err = e->error().norm();
 			std::cout << "Error Odometry Edge id: " << edge_id << ", error: " << err << "\n";
@@ -249,8 +251,8 @@ int main(int argc, const char* argv[]){
 	//est_pose.setTranslation(est_pose.translation() + g2o::Vector3D(Sample::gaussian(0.1), Sample::gaussian(0.1), Sample::gaussian(0.1)));
 
     //create a vertex representing the pose
-    g2o::VertexSE3 * v_se3
-        = new g2o::VertexSE3();
+    g2o::VertexSE3Expmap * v_se3
+        = new g2o::VertexSE3Expmap();
     v_se3->setId(overall_vertex_counter);
     v_se3->setEstimate(est_pose);
 	if (i == 0)
@@ -279,7 +281,7 @@ int main(int argc, const char* argv[]){
 
   //-------- setup the pose covariance (information matrix)
 
-  g2o::EdgeSE3::InformationType information_pose;
+  g2o::EdgeSE3Expmap::InformationType information_pose;
   information_pose.setIdentity();
   information_pose=information_pose;
   cout << "information of each pose: \n" << information_pose << endl;
@@ -313,7 +315,7 @@ int main(int argc, const char* argv[]){
 	  //noisy_poses.push_back(*(noisy_poses.end() - 1)*rel_pose);
 
 
-	  g2o::EdgeSE3* odometry = new g2o::EdgeSE3;
+	  g2o::EdgeSE3Expmap* odometry = new g2o::EdgeSE3Expmap;
 	  odometry->vertices()[0] = optimizer.vertex(i - 1);
 	  odometry->vertices()[1] = optimizer.vertex(i);
 
@@ -327,7 +329,7 @@ int main(int argc, const char* argv[]){
 
 	  
 	  odometry->setMeasurement(rel_pose);
-	  g2o::EdgeSE3::InformationType rel_pose_info_mat;
+	  g2o::EdgeSE3Expmap::InformationType rel_pose_info_mat;
 
 	  rel_pose_info_mat.setIdentity();
 	  //rel_pose_info_mat *= 1000.0;
@@ -471,9 +473,9 @@ void print_abs_pose_errors(g2o::SparseOptimizer& optimizer, vector<g2o::SE3Quat,
 	for (g2o::HyperGraph::VertexIDMap::iterator v_it_poses = optimizer.vertices().begin(); v_it_poses != optimizer.vertices().end(); v_it_poses++)
 	{
 		
-		if (dynamic_cast<g2o::VertexSE3*>(v_it_poses->second))
+		if (dynamic_cast<g2o::VertexSE3Expmap*>(v_it_poses->second))
 		{
-			g2o::VertexSE3 * v_pose = dynamic_cast< g2o::VertexSE3 * > (v_it_poses->second);
+			g2o::VertexSE3Expmap * v_pose = dynamic_cast< g2o::VertexSE3Expmap * > (v_it_poses->second);
 			g2o::Isometry3D est_pose = v_pose->estimate();
 			g2o::SE3Quat true_pose = true_poses[v_pose->id()];
 

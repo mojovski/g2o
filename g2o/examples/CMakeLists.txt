@@ -33,6 +33,7 @@ ENDIF()
 ADD_SUBDIRECTORY(data_convert)
 ADD_SUBDIRECTORY(interactive_slam)
 ADD_SUBDIRECTORY(SBA_depth)
+ADD_SUBDIRECTORY(SBA_depth_expmap)
 
 ADD_SUBDIRECTORY(absolute_referencing)
 
