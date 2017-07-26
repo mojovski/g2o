@@ -14,6 +14,8 @@ SET_TARGET_PROPERTIES(tutorial_slam2d_library PROPERTIES OUTPUT_NAME ${LIB_PREFI
 
 TARGET_LINK_LIBRARIES(tutorial_slam2d_library core solver_csparse)
 
+
+#---------------------------------------------------
 ADD_EXECUTABLE(tutorial_slam2d
   tutorial_slam2d.cpp
 )
@@ -21,3 +23,14 @@ ADD_EXECUTABLE(tutorial_slam2d
 SET_TARGET_PROPERTIES(tutorial_slam2d PROPERTIES OUTPUT_NAME tutorial_slam2d${EXE_POSTFIX})
 
 TARGET_LINK_LIBRARIES(tutorial_slam2d tutorial_slam2d_library)
+
+
+#------------- ef experiment-------------------------
+ADD_EXECUTABLE(experiment_slam2d_abs_init
+  experiment_slam2d_abs_init.cpp
+)
+
+SET_TARGET_PROPERTIES(experiment_slam2d_abs_init PROPERTIES OUTPUT_NAME experiment_slam2d_abs_init${EXE_POSTFIX})
+
+TARGET_LINK_LIBRARIES(experiment_slam2d_abs_init tutorial_slam2d_library)
+

@@ -62,6 +62,9 @@ namespace g2o {
     void EdgeSE2PointXY::computeError()
     {
       const VertexPointXY* l2 = static_cast<const VertexPointXY*>(_vertices[1]);
+      //std::cout << "-------\nEdgeSE2PointXY. To estimate: " << l2->estimate() << std::endl;
+      //const VertexPointXY* l1 = static_cast<const VertexPointXY*>(_vertices[0]);
+      //std::cout << "EdgeSE2PointXY. From vertex.estimate: " << l1->estimate() << std::endl;
       _error = (_sensorCache->w2n() * l2->estimate()) - _measurement;
     }
 

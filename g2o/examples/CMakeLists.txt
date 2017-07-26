@@ -32,7 +32,7 @@ ENDIF()
 
 ADD_SUBDIRECTORY(data_convert)
 ADD_SUBDIRECTORY(interactive_slam)
-
 ADD_SUBDIRECTORY(SBA_depth)
 
-ADD_SUBDIRECTORY(hessian_error)
+ADD_SUBDIRECTORY(slam3d)
+
