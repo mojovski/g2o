@@ -30,6 +30,10 @@ BaseVertex<D, T>::BaseVertex() :
   _hessian(0, D, D)
 {
   _dimension = D;
+  double hp[D*D];
+  for (int i = 0; i < D*D; i++)
+	  hp[i] = 0.0;
+  new (&_hessian) HessianBlockType(hp, D, D);
 }
 
 template <int D, typename T>

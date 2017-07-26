@@ -86,9 +86,9 @@ namespace g2o {
 
     protected:
       ParameterSE3Offset* _offsetParam; ///< the parameter connected to the cache
-      Isometry3D _w2n;
-      Isometry3D _n2w;
-      Isometry3D _w2l;
+      Isometry3D _w2n; //World to node?
+      Isometry3D _n2w; //Node to world?
+      Isometry3D _w2l; //?? world to local?????
 
     protected:
       virtual bool resolveDependancies();

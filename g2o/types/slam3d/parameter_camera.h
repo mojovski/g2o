@@ -66,7 +66,7 @@ namespace g2o {
   protected:
     virtual void updateImpl();
     virtual bool resolveDependancies();
-    Affine3D _w2i; ///< world to image transform
+    Affine3D _w2i; ///< world to image transform, computed in parameter_camera.cpp:96. Transforms a point in world frame into the image plane (u,v,depth), e.g. used in EdgeSE3PointXYZDepth::computeError()
     ParameterCamera* params;
   };
 

@@ -30,11 +30,11 @@ namespace g2o {
   using namespace g2o;
 
   // point to camera projection, monocular
-  EdgeSE3PointXYZDepth::EdgeSE3PointXYZDepth() : BaseBinaryEdge<3, Vector3D, VertexSE3, VertexPointXYZ>() {
+  EdgeSE3PointXYZDepth::EdgeSE3PointXYZDepth() : BaseBinaryEdge<3, Vector3D/*Measurement of the point IN the image (u,v,depth)*/, VertexSE3, VertexPointXYZ>() {
     resizeParameters(1);
     installParameter(params, 0);
     information().setIdentity();
-    information()(2,2)=100;
+    information()(2,2)=100; //Whats this?? The depth uncertainty is high??
     J.fill(0);
     J.block<3,3>(0,0) = -Matrix3D::Identity();
   }
@@ -93,13 +93,14 @@ namespace g2o {
     //VertexSE3 *cam = static_cast<VertexSE3*>(_vertices[0]);
     VertexPointXYZ *point = static_cast<VertexPointXYZ*>(_vertices[1]);
 
+	g2o::Affine3D w2i = cache->w2i(); //world to image plane transform
     Vector3D p = cache->w2i() * point->estimate();
     Vector3D perr;
     perr.head<2>() = p.head<2>()/p(2);
     perr(2) = p(2);
 
     // error, which is backwards from the normal observed - calculated
-    // _measurement is the measured projection
+    // _measurement is the measured 3d point xyz
     _error = perr - _measurement;
     //    std::cout << _error << std::endl << std::endl;
   }

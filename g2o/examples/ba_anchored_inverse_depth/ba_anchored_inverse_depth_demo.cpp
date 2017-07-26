@@ -35,11 +35,14 @@
 #include "g2o/core/solver.h"
 #include "g2o/core/robust_kernel_impl.h"
 #include "g2o/core/optimization_algorithm_levenberg.h"
-#include "g2o/solvers/cholmod/linear_solver_cholmod.h"
+//#include "g2o/solvers/cholmod/linear_solver_cholmod.h"
 #include "g2o/solvers/dense/linear_solver_dense.h"
 #include "g2o/types/sba/types_six_dof_expmap.h"
 //#include "g2o/math_groups/se3quat.h"
 #include "g2o/solvers/structure_only/structure_only_solver.h"
+#include "g2o/solvers/csparse/linear_solver_csparse.h"
+#include <g2o/solvers/eigen/linear_solver_eigen.h>
+
 
 using namespace Eigen;
 using namespace std;
@@ -142,16 +145,18 @@ int main(int argc, const char* argv[]){
   if (SCHUR_TRICK){
     g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
 
-    linearSolver
-        = new g2o::LinearSolverCholmod<g2o
-        ::BlockSolver_6_3::PoseMatrixType>();
+   // linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType>();
+
+  linearSolver = new g2o::LinearSolverCSparse<g2o::BlockSolver_6_3::PoseMatrixType>();
+  cerr << "Using CSPARSE" << endl;
+
     g2o::BlockSolver_6_3 * solver_ptr
         = new g2o::BlockSolver_6_3(linearSolver);
     solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
   } else {
     g2o::BlockSolverX::LinearSolverType * linearSolver;
     linearSolver
-        = new g2o::LinearSolverCholmod<g2o
+        = new g2o::LinearSolverEigen<g2o
         ::BlockSolverX::PoseMatrixType>();
     g2o::BlockSolverX * solver_ptr
         = new g2o::BlockSolverX(linearSolver);
@@ -197,6 +202,12 @@ int main(int argc, const char* argv[]){
     }
 
     optimizer.addVertex(v_se3);
+
+	for (int di = 0; di < v_se3->dimension(); di++)
+	{
+		std::cout << "hessian(" << di << "," << di << ")=" << v_se3->hessian(di, di) << "\n";
+	}
+
     true_poses.push_back(T_me_from_world);
     vertex_id++;
   }

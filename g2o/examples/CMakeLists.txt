@@ -7,7 +7,7 @@ ADD_SUBDIRECTORY(sphere)
 IF(CHOLMOD_FOUND)
   ADD_SUBDIRECTORY(target)
   ADD_SUBDIRECTORY(ba)
-  ADD_SUBDIRECTORY(ba_anchored_inverse_depth)
+  
 ENDIF(CHOLMOD_FOUND)
 
 # Examples which explicitly use CSparse
@@ -18,6 +18,7 @@ IF(CSPARSE_FOUND)
   ADD_SUBDIRECTORY(simple_optimize)
   ADD_SUBDIRECTORY(plane_slam)
   ADD_SUBDIRECTORY(line_slam)
+  ADD_SUBDIRECTORY(ba_anchored_inverse_depth)
 ENDIF()
 
 IF(CSPARSE_FOUND OR CHOLMOD_FOUND)
@@ -31,3 +32,7 @@ ENDIF()
 
 ADD_SUBDIRECTORY(data_convert)
 ADD_SUBDIRECTORY(interactive_slam)
+
+ADD_SUBDIRECTORY(SBA_depth)
+
+ADD_SUBDIRECTORY(hessian_error)

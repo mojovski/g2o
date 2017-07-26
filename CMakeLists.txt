@@ -248,6 +248,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${g2o_CXX_FLAGS}")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${g2o_C_FLAGS}")
 
 # Find Eigen3
+SET(EIGEN_DIR "${CMAKE_SOURCE_DIR}/EXTERNAL/eigen")
 FIND_PACKAGE(Eigen3 REQUIRED)
 
 # Set up the top-level include directories
