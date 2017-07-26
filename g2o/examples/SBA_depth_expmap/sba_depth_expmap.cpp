@@ -53,7 +53,9 @@
 
 using namespace Eigen;
 using namespace std;
-#define PI 3.14159265
+#ifndef PI
+	#define PI 3.14159265
+#endif
 
 class Sample{
 public:

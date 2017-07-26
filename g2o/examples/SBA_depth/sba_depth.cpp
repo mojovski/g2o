@@ -43,6 +43,7 @@
 #include "g2o/solvers/structure_only/structure_only_solver.h"
 #include <cmath>
 #include <g2o/types/slam3d/edge_se3_pointxyz_depth.h>
+
 #include <g2o/types/slam3d/se3quat.h>
 #include <g2o/types/slam3d/edge_se3.h>
 #include "g2o/solvers/csparse/linear_solver_csparse.h"
@@ -167,7 +168,7 @@ int main(int argc, const char* argv[]){
     ROBUST_KERNEL = atoi(argv[3]) != 0;
   }
 
-  bool SCHUR_TRICK = true;
+  bool SCHUR_TRICK = false;
   if (argc>4){
     SCHUR_TRICK = atoi(argv[4]) != 0;
   }
@@ -192,8 +193,7 @@ int main(int argc, const char* argv[]){
 	//linearSolver = new g2o::LinearSolverCSparse<g2o::BlockSolver_6_3::PoseMatrixType>();
 	cerr << "Using CSPARSE" << endl;
 
-    g2o::BlockSolver_6_3 * solver_ptr
-        = new g2o::BlockSolver_6_3(linearSolver);
+    g2o::BlockSolver_6_3 * solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
     solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
   } else {
     g2o::BlockSolverX::LinearSolverType * linearSolver;
@@ -224,6 +224,7 @@ int main(int argc, const char* argv[]){
   */
   vector<g2o::SE3Quat, aligned_allocator<g2o::SE3Quat> > true_poses;
   vector<g2o::SE3Quat, aligned_allocator<g2o::SE3Quat> > noisy_poses;
+  vector<g2o::SE3Quat, aligned_allocator<g2o::SE3Quat> > noisy_odometry_deltas;
 
   int n=20;
   double angle_step=360.0/(double)n/180.0*PI;
@@ -238,51 +239,76 @@ int main(int argc, const char* argv[]){
     g2o::SE3Quat pose(q, t);
     true_poses.push_back(pose);
 
-	g2o::SE3Quat noisy_pose(pose);
-	if (i>0)
-		noisy_pose.setTranslation(pose.translation() + g2o::Vector3D(Sample::gaussian(0.1), Sample::gaussian(0.1), Sample::gaussian(0.1)));
 
-	noisy_poses.push_back(noisy_pose);
+	if (i > 0)
+	{
+		g2o::SE3Quat rel_pose_odometry = (noisy_poses.end() - 1)->inverse()*pose;
+		//add noise/drift
+		rel_pose_odometry.setTranslation(rel_pose_odometry.translation() + g2o::Vector3D(Sample::gaussian(0.03), Sample::gaussian(0.03), Sample::gaussian(0.03)));
+		noisy_odometry_deltas.push_back(rel_pose_odometry);
+		noisy_poses.push_back(*(noisy_poses.end() - 1)*rel_pose_odometry);
+	}
+	else
+	{
+		noisy_poses.push_back(pose);
+	}
 
 
-	g2o::SE3Quat est_pose = noisy_pose;
+
+	g2o::SE3Quat est_pose = *(noisy_poses.end() - 1);
 	//est_pose.setTranslation(est_pose.translation() + g2o::Vector3D(Sample::gaussian(0.1), Sample::gaussian(0.1), Sample::gaussian(0.1)));
 
     //create a vertex representing the pose
-    g2o::VertexSE3 * v_se3
-        = new g2o::VertexSE3();
+    g2o::VertexSE3 * v_se3 = new g2o::VertexSE3();
     v_se3->setId(overall_vertex_counter);
     v_se3->setEstimate(est_pose);
-	if (i == 0)
+	if (i <2)
 		v_se3->setFixed(true);
     optimizer.addVertex(v_se3);
     overall_vertex_counter++;
 
   }
   int num_pose_vertices=n;
+  //===================================== POSES DONE========================================
 
 
   //assign the links between the poses and the markers?
   std::map<int,std::vector<int> > markers_poses_links;
+  //every marker is visible fro every frame... Then the overall pose error is 1.4mm
+  /*
+  for (int mi=0; mi<3; mi++)
+	  for (int pi = 0; pi < num_pose_vertices; pi++)
+	  {
+		  markers_poses_links[mi].push_back(pi);
+	  }
+*/
   markers_poses_links[0].push_back(0); //0.th marker is visible in poses 0,1,2
   markers_poses_links[0].push_back(1);
   markers_poses_links[0].push_back(2);
+  markers_poses_links[0].push_back(3);
 
+
+  markers_poses_links[1].push_back(2);
+  markers_poses_links[1].push_back(3);
   markers_poses_links[1].push_back(4);
   markers_poses_links[1].push_back(7);
   markers_poses_links[1].push_back(10);
 
+  markers_poses_links[2].push_back(7);
+  markers_poses_links[2].push_back(10);
   markers_poses_links[2].push_back(13);
   markers_poses_links[2].push_back(14);
   markers_poses_links[2].push_back(n-1);
+  markers_poses_links[2].push_back(1);
+  markers_poses_links[2].push_back(3);
   
 
   //-------- setup the pose covariance (information matrix)
 
-  g2o::EdgeSE3::InformationType information_pose;
-  information_pose.setIdentity();
-  information_pose=information_pose;
-  cout << "information of each pose: \n" << information_pose << endl;
+  g2o::EdgeSE3::InformationType information_delta_pose;
+  information_delta_pose.setIdentity();
+  information_delta_pose *= 10000;
+  cout << "information of each pose: \n" << information_delta_pose << endl;
 
 
   //setup the camera properties
@@ -303,35 +329,25 @@ int main(int argc, const char* argv[]){
   Add the odometry edges
   */
   //noisy_poses.push_back(true_poses[0]);
-  for (int i = 1; i < num_pose_vertices; i++)
+  for (int i = 0; i < noisy_odometry_deltas.size(); i++)
   {
-	  g2o::SE3Quat pose1 = noisy_poses[i - 1];
-	  g2o::SE3Quat pose2 = noisy_poses[i];
-	  g2o::SE3Quat rel_pose = pose1.inverse()*pose2;
-	  //add noise to the odometry
-	  //rel_pose.setTranslation(rel_pose.translation()+ g2o::Vector3D(Sample::gaussian(0.1), Sample::gaussian(0.1), Sample::gaussian(0.1)));
-	  //noisy_poses.push_back(*(noisy_poses.end() - 1)*rel_pose);
-
-
+	  
 	  g2o::EdgeSE3* odometry = new g2o::EdgeSE3;
-	  odometry->vertices()[0] = optimizer.vertex(i - 1);
-	  odometry->vertices()[1] = optimizer.vertex(i);
+	  odometry->vertices()[0] = optimizer.vertex(i);
+	  odometry->vertices()[1] = optimizer.vertex(i+1);
 
-	  int id1 = optimizer.vertex(i - 1)->id();
-	  int id2 = optimizer.vertex(i)->id();
-	  if (id1 != (i - 1) || (id2 != i))
+	  int id1 = optimizer.vertex(i)->id();
+	  int id2 = optimizer.vertex(i+1)->id();
+	  if (id2 != (i + 1) || (id1 != i))
 	  {
 		  std::cerr << "Error: The Vertex IDS do not match!";
 		  throw std::runtime_error("The vertex ids do not match when addeing odometry");
 	  }
 
 	  
-	  odometry->setMeasurement(rel_pose);
-	  g2o::EdgeSE3::InformationType rel_pose_info_mat;
-
-	  rel_pose_info_mat.setIdentity();
-	  //rel_pose_info_mat *= 1000.0;
-	  odometry->setInformation(rel_pose_info_mat);
+	  odometry->setMeasurement(noisy_odometry_deltas[i]);
+	  //information_delta_pose *= 1000.0;
+	  odometry->setInformation(information_delta_pose);
 	  optimizer.addEdge(odometry);
 
   }
@@ -415,8 +431,8 @@ int main(int argc, const char* argv[]){
       e->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(v_marker)); 
 
       e->setMeasurement(marker_in_image_uvd);//the marker measurement in image (u,v,depth)
-      e->information() = Matrix3d::Identity()*100;
-	  e->information()(2, 2) = 1000;
+      e->information() = Matrix3d::Identity()*10;
+	  e->information()(2, 2) = 10;
 
       if (ROBUST_KERNEL) {
         g2o::RobustKernelHuber* rk = new g2o::RobustKernelHuber;
