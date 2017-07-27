@@ -133,7 +133,7 @@ namespace g2o {
 		    reader.read(file_path);
 
 		    CSVReader::LinesType lines=reader.lines;
-		    for (int i=0; i<reader.lines.size(); i++)
+		    for (size_t i=0; i<reader.lines.size(); i++)
 		    {
 		        SE3QuatStamped pose;
 		        pose.se3.setRotation(Quaterniond(std::stod(reader.lines[i].elements[1]),
@@ -157,7 +157,7 @@ namespace g2o {
 		    reader.read(file_path);
 
 		    CSVReader::LinesType lines=reader.lines;
-		    for (int i=0; i<reader.lines.size(); i++)
+		    for (size_t i=0; i<reader.lines.size(); i++)
 		    {
 		        MarkerObservation mo;
 		        mo.id=std::stol(reader.lines[i].elements[0]);
@@ -231,7 +231,7 @@ namespace g2o {
 		{
 			float n=0;
 			Vector3d mean_in_w(0,0,0);
-			for (int i=0;i<marker_obs.size(); i++)
+			for (size_t i=0;i<marker_obs.size(); i++)
 			{
 				if (marker_obs[i].id==marker_id)
 				{
@@ -280,7 +280,7 @@ namespace g2o {
 
 		void addPosesAsVertices()
 		{
-			for (int i=0; i<poses.size(); i++)
+			for (size_t i=0; i<poses.size(); i++)
 			{
 				g2o::VertexSE3 * v_se3 = new g2o::VertexSE3();
 				v_se3->setId(i);
