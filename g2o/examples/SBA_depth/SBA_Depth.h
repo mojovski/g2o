@@ -62,24 +62,20 @@ namespace g2o {
 			
 		};
 
+		Options options;
+
+		SBADepth():overall_vertex_counter(0),optimization_initialized(false){}
+
 		void setCamParams(float fx, float fy, float cx, float cy)
 		{
 			cam_params.setKcam(fx, fy, cx, cy);
 			//you may also set the depth sensor offset via cam_params->setOffset(Isometry3D)
 			cam_params.setId(0);
-			//Todo dont call it twice
+			optimizer.clearParameters();
 			if (!optimizer.addParameter(&cam_params)){
-			    assert(false);
+				assert(false);
 			}
 		}
-
-		
-
-
-		Options options;
-		
-
-		
 
 		void addPose(SE3QuatStamped& pose)
 		{
@@ -89,7 +85,7 @@ namespace g2o {
 
 		void addMarker(MarkerObservation& m){marker_obs.push_back(m);}
 
-		SBADepth():overall_vertex_counter(0),optimization_initialized(false){}
+
 
 		void setupOptimization()
 		{
@@ -180,7 +176,7 @@ namespace g2o {
 		{
 			std::ofstream csv_file;
 			csv_file.open (dest_filepath);
-			csv_file << "#time, t(x,y,z), q(x,y,z,w)\n"; //covariances are not considered yet., , cov(9, col-major)\n";
+			csv_file << "#time,tx,ty,tz,qx,qy,qz,qw\n"; //covariances are not considered yet., , cov(9, col-major)\n";
 			IOFormat csvFmt(6, 0, ",", ";", "", "");
 
 			for (g2o::HyperGraph::VertexIDMap::iterator v_it_poses = optimizer.vertices().begin(); v_it_poses != optimizer.vertices().end(); v_it_poses++)
@@ -192,7 +188,7 @@ namespace g2o {
 					g2o::Isometry3D est_pose = v_pose->estimate();
 					//Isometry3D --> (x, y, z, qx, qy, qz, qw)
 					g2o::Vector7d est_pose_vec = g2o::internal::toVectorQT(est_pose);
-					csv_file << est_pose_vec.format(csvFmt) << "\n";
+					csv_file << poses[v_pose->id()].time << "," << est_pose_vec.format(csvFmt) << "\n";
 				}
 			}
 			csv_file.close();
@@ -296,7 +292,7 @@ namespace g2o {
 
 		void addOdometryEdges()
 		{
-			for (int i = 1; i < poses.size(); i++)
+			for (size_t i = 1; i < poses.size(); i++)
 			{
 
 				SE3Quat pose1=poses[i-1].se3;
