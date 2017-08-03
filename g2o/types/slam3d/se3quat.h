@@ -281,6 +281,16 @@ namespace g2o {
         _r.normalize();
       }
 
+      /*@brief
+      Enables to assign Isometry3D to SE3Quat
+      **/
+      SE3Quat& operator=(const Isometry3D& iso)
+      {
+        _r=Eigen::Quaterniond(iso.rotation());
+        _t=iso.translation();
+        return *this;
+      }
+
       /**
        * cast SE3Quat into an Isometry3D
        */
