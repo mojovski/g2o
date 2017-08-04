@@ -93,7 +93,9 @@ namespace g2o {
 
   void CacheCamera::updateImpl(){
     CacheSE3Offset::updateImpl();
-    _w2i.matrix().topLeftCorner<3,4>() = params->Kcam() * w2n().matrix().topLeftCorner<3,4>();
+    Eigen::Matrix<double,3,4> A=w2n().matrix().topLeftCorner<3,4>();
+      Eigen::Matrix<double,3,4> tmp=params->Kcam() * A;
+    _w2i.matrix().topLeftCorner<3,4>() = tmp;
   }
 
 #ifdef G2O_HAVE_OPENGL

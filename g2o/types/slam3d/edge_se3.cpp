@@ -52,7 +52,9 @@ namespace g2o {
   void EdgeSE3::computeError() {
     VertexSE3 *from = static_cast<VertexSE3*>(_vertices[0]);
     VertexSE3 *to   = static_cast<VertexSE3*>(_vertices[1]);
-    Isometry3D delta=_inverseMeasurement * from->estimate().inverse() * to->estimate();
+    Isometry3D rel_pose=from->estimate().inverse() * to->estimate();
+
+    Isometry3D delta=_inverseMeasurement * rel_pose;
     _error=internal::toVectorMQT(delta);
   }
 

@@ -93,8 +93,8 @@ namespace g2o {
     //VertexSE3 *cam = static_cast<VertexSE3*>(_vertices[0]);
     VertexPointXYZ *point = static_cast<VertexPointXYZ*>(_vertices[1]);
 
-	//g2o::Affine3D w2i = cache->w2i(); //world to image plane transform
-    Vector3D p = cache->w2i() * point->estimate();
+	g2o::Affine3D w2i = cache->w2i(); //world to image plane transform
+    Vector3D p = w2i * point->estimate();
     Vector3D perr;
     perr.head<2>() = p.head<2>()/p(2);
     perr(2) = p(2);
