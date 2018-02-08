@@ -172,10 +172,10 @@ IF (OPENGL_FOUND AND G2O_USE_OPENGL)
 ENDIF()
 
 # For building the GUI
-FIND_PACKAGE(QGLViewer)
+#FIND_PACKAGE(QGLViewer)
 
 # shall we build the core apps using the library
-SET(G2O_BUILD_APPS ON CACHE BOOL "Build g2o apps")
+SET(G2O_BUILD_APPS OFF CACHE BOOL "Build g2o apps")
 IF(G2O_BUILD_APPS)
   MESSAGE(STATUS "Compiling g2o apps")
 ENDIF(G2O_BUILD_APPS)
