@@ -24,6 +24,9 @@ ADD_LIBRARY(types_slam3d ${G2O_LIB_TYPE}
   edge_se3_pointxyz_disparity.h
   edge_se3_pointxyz_depth.cpp
   edge_se3_pointxyz_depth.h
+
+  edge_se3_pointxyz_uv.cpp
+  edge_se3_pointxyz_uv.h
   #edge_se3expmap_pointxyz_depth.cpp
   #edge_se3expmap_pointxyz_depth.h
   edge_se3_prior.cpp
