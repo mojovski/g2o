@@ -61,7 +61,7 @@ void RobustKernelFactory::registerRobustKernel(const std::string& tag, AbstractR
   CreatorMap::const_iterator foundIt = _creator.find(tag);
   if (foundIt != _creator.end()) {
     cerr << "RobustKernelFactory WARNING: Overwriting robust kernel tag " << tag << endl;
-    assert(0);
+    //assert(0);
   }
 
   _creator[tag] = c;
